@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ECHO MIX JStv Karaoke</title>
+
+<style>
+html,body{
+margin:0;
+height:100%;
+background:black;
+font-family:Arial;
+overflow:hidden;
+color:white;
+}
+
+/* OPENING */
+#opening{
+position:fixed;
+inset:0;
+background:black;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
+#songTitle{
+position:absolute;
+top:20px;
+left:50%;
+transform:translateX(-50%);
+font-size:28px;
+z-index:10;
+color:white;
+font-weight:bold;
+text-shadow:0 0 10px black;
+}
+
+#startBtn{
+font-size:30px;
+padding:15px 40px;
+cursor:pointer;
+}
+
+#coverPhoto{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+object-fit:cover;
+z-index:0;
+display:none;
+}
+
+#video{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+display:none;
+z-index:1;
+}
+
+#title{
+position:absolute;
+top:20px;
+left:50%;
+transform:translateX(-50%);
+font-size:28px;
+z-index:10;
+}
+
+#queue{
+position:absolute;
+top:10px;
+left:10px;
+width:105px;
+max-height:600px;
+overflow:auto;
+
+background:rgba(0,0,0,0.7);
+
+padding:10px;
+
+border:2px solid white;
+border-radius:10px;
+
+box-shadow:0 0 10px white, 0 0 20px white;
+
+z-index:10;
+}
+
+#search{
+position:absolute;
+top:10px;
+right:10px;
+font-size:40px;
+width:200px;
+text-align:center;
+z-index:10;
+
+background:transparent;
+border:2px solid white;
+color:white;
+outline:none;
+
+box-shadow:0 0 10px white, 0 0 20px white;
+}
+#idle{
+position:absolute;
+top:70px;
+right:10px;
+width:200px;
+text-align:center;
+font-size:20px;
+z-index:10;
+display:none;
+
+border:2px solid white;
+padding:8px;
+border-radius:8px;
+background:rgba(0,0,0,0.6);
+}
+
+#scoreBox{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    display:none;
+
+    text-align:center;
+    padding:40px;
+
+    background:rgba(0,0,0,0.85);
+
+    border:4px solid white;
+    border-radius:20px;
+
+    box-shadow:
+        0 0 10px white,
+        0 0 20px white,
+        0 0 40px white,
+        0 0 80px white;
+
+    z-index:20;
+}
+#skipBtn{
+position:absolute;
+bottom:30px;
+right:30px;
+padding:12px 25px;
+font-size:20px;
+font-weight:bold;
+cursor:pointer;
+z-index:10000;
+display:none;
+}
+
+#scoreNumber{
+font-size:100px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- OPENING -->
+<div id="opening">
+<h1>🎤 OPEN KARAOKE</h1>
+<button id="startBtn">START</button>
+</div>
+
+<!-- AUDIO -->
+<audio id="bgm" src="sounds/bgm1.mp3" loop></audio>
+<audio id="voiceOver" src="sounds/intro.mp3"></audio>
+<audio id="resultSound" src="sounds/result.mp3"></audio>
+
+<img id="coverPhoto" src="images/cover1.png">
+
+<video id="video"></video>
+
+<button id="skipBtn">SKIP</button>
+
+<div id="songTitle"></div>
+<div id="queue"></div>
+<input id="search" value="000000" maxlength="6">
+<div id="idle">🎤 ENTER SONG</div>
+
+<div id="scoreBox">
+
+<div style="display:flex;gap:80px;align-items:center;justify-content:center;">
+
+<div>
+<div style="font-size:30px;margin-bottom:10px;">SINGER 1</div>
+<div id="score1" style="font-size:100px;">0</div>
+</div>
+
+<div>
+<div style="font-size:30px;margin-bottom:10px;">SINGER 2</div>
+<div id="score2" style="font-size:100px;">0</div>
+</div>
+
+</div>
+
+</div>
+
+<div id="turnIndicator"
+style="
+position:absolute;
+top:30px;
+left:50%;
+transform:translateX(-50%);
+font-size:60px;
+font-weight:bold;
+z-index:15;
+display:none;
+">
+SINGER 1 TURN
+</div>
+
+<div id="turnTimer"
+style="
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+
+display:none;
+
+font-size:400px;
+font-weight:bold;
+
+color:gold;
+
+z-index:15;
+pointer-events:none;
+opacity:0.2;
+">
+00
+</div>
+
+<script>
+
+let inputLocked = true;
+
+const opening = document.getElementById("opening");
+const startBtn = document.getElementById("startBtn");
+const bgm = document.getElementById("bgm");
+const voiceOver = document.getElementById("voiceOver");
+const skipBtn = document.getElementById("skipBtn");
+const resultSound = document.getElementById("resultSound");
+
+const video = document.getElementById("video");
+const cover = document.getElementById("coverPhoto");
+const search = document.getElementById("search");
+const idle = document.getElementById("idle");
+const queueBox = document.getElementById("queue");
+const score1 = document.getElementById("score1");
+const score2 = document.getElementById("score2");
+const turnIndicator = document.getElementById("turnIndicator");
+const scoreNumber = document.getElementById("scoreNumber");
+const title = document.getElementById("title");
+const turnTimer = document.getElementById("turnTimer");
+
+let timerInterval;
+let queue = [];
+let scoreInterval;
+
+/* SONGS */
+const songs = Array.from({length:99999},(_,i)=>({
+id:i+1,
+file:`videos/${i+1}.mp4`
+}));
+
+/* START */
+startBtn.onclick = ()=>{
+
+opening.style.display="none";
+
+idle.style.display="block";
+cover.style.display="block";
+
+bgm.volume=0.2;
+bgm.play();
+
+/* VO after 5 sec */
+setTimeout(()=>{
+
+voiceOver.play();
+skipBtn.style.display="block";
+
+skipBtn.onclick = ()=>{
+
+    voiceOver.pause();
+    voiceOver.currentTime = 0;
+
+    inputLocked = false;
+
+    skipBtn.style.display = "none";
+
+};
+
+/* fade bgm 100% -> 20% */
+let fade=setInterval(()=>{
+if(bgm.volume>0.3){
+bgm.volume=Math.max(0.2,bgm.volume-0.05);
+}else clearInterval(fade);
+},150);
+
+},5000);
+
+};
+
+/* VO END */
+voiceOver.onended=()=>{
+inputLocked=false;
+skipBtn.style.display="none";
+};
+
+/* KEYBOARD */
+document.addEventListener("keydown",(e)=>{
+
+if(inputLocked) return;
+
+let val=search.value.replace(/\D/g,"");
+
+if(e.key>="0"&&e.key<="9"){
+val=(val+e.key).slice(-6);
+search.value=val.padStart(6,"0");
+new Audio("sounds/"+e.key+".mp3").play();
+}
+
+if(e.key==="Enter"){
+playSongByCode();
+}
+
+});
+
+/* PLAY CODE */
+function playSongByCode(){
+
+let num=parseInt(search.value);
+if(num<1||num>99999)return;
+
+queue.push(songs[num-1]);
+updateQueue();
+
+search.value="000000";
+
+if(video.paused) playNext();
+}
+
+/* QUEUE */
+function updateQueue(){
+queueBox.innerHTML="<b>QUEUE</b><br>";
+queue.forEach((q,i)=>{
+queueBox.innerHTML+=`<div>${i+1}. ${String(q.id).padStart(6,"0")}</div>`;
+});
+}
+
+/* PLAY NEXT */
+function playNext(){
+
+if(queue.length===0){
+idle.style.display="block";
+cover.style.display="block";
+video.style.display="none";
+bgm.volume=1;
+bgm.play();
+return;
+}
+
+playSong(queue.shift());
+updateQueue();
+}
+
+/* PLAY SONG */
+function startCountdown(seconds){
+
+    clearInterval(timerInterval);
+
+    turnTimer.style.display="block";
+
+    let remain=Math.ceil(seconds);
+
+    turnTimer.innerText=remain;
+
+    timerInterval=setInterval(()=>{
+
+        remain--;
+
+        if(remain<0){
+            clearInterval(timerInterval);
+            turnTimer.innerText="0";
+            return;
+        }
+
+        turnTimer.innerText=remain;
+
+    },1000);
+
+}
+function playSong(song){
+
+    bgm.pause();
+    bgm.currentTime=0;
+
+    idle.style.display="none";
+    cover.style.display="none";
+    video.style.display="block";
+
+    document.getElementById("songTitle").innerText =
+"SONG " + String(song.id).padStart(6,"0");
+
+    video.src=song.file;
+
+    video.onloadedmetadata=()=>{
+
+        let duration=video.duration;
+
+        turnIndicator.style.display="block";
+
+        let part1=duration*0.25;
+        let part2=duration*0.25;
+        let part3=duration*0.125;
+        let part4=duration*0.125;
+        let part5=duration*0.25;
+
+        turnIndicator.innerText="🎤 SINGER 1 TURN";
+        startCountdown(part1);
+
+        setTimeout(()=>{
+            turnIndicator.innerText="🎤 SINGER 2 TURN";
+            startCountdown(part2);
+        },part1*1000);
+
+        setTimeout(()=>{
+            turnIndicator.innerText="🎤 SINGER 1 TURN";
+            startCountdown(part3);
+        },(part1+part2)*1000);
+
+        setTimeout(()=>{
+            turnIndicator.innerText="🎤 SINGER 2 TURN";
+            startCountdown(part4);
+        },(part1+part2+part3)*1000);
+
+        setTimeout(()=>{
+            turnIndicator.innerText="🎤 BOTH SINGERS";
+            startCountdown(part5);
+        },(part1+part2+part3+part4)*1000);
+
+    };
+
+    video.play();
+
+    video.onended=()=>{
+        clearInterval(timerInterval);
+        turnTimer.style.display="none";
+        turnIndicator.style.display="none";
+        showScore();
+    };
+
+}
+
+function showScore(){
+
+    let resultTimeout;
+
+
+    const scoreBox = document.getElementById("scoreBox");
+
+    scoreBox.style.display="block";
+
+    let final1=Math.floor(Math.random()*20)+80;
+    let final2=Math.floor(Math.random()*20)+80;
+
+    let current1=0;
+    let current2=0;
+
+    score1.innerText="0";
+    score2.innerText="0";
+
+    let old=document.getElementById("winnerText");
+    if(old) old.remove();
+
+    clearInterval(scoreInterval);
+    clearTimeout(resultTimeout);
+
+    scoreInterval=setInterval(()=>{
+
+        if(current1<final1){
+            current1+=Math.ceil((final1-current1)/8);
+        }
+
+        if(current2<final2){
+            current2+=Math.ceil((final2-current2)/8);
+        }
+
+        score1.innerText=current1;
+        score2.innerText=current2;
+
+       if(current1>=final1 && current2>=final2){
+
+    clearInterval(scoreInterval);
+
+    // ✅ PLAY RESULT SOUND HERE (after rolling finishes)
+    resultSound.currentTime = 0;
+    resultSound.play().catch(()=>{});
+
+    let winner="🤝 DRAW";
+
+    if(final1>final2){
+        winner="🏆 SINGER 1 WINS";
+    }else if(final2>final1){
+        winner="🏆 SINGER 2 WINS";
+    }
+
+    let div=document.createElement("div");
+    div.id="winnerText";
+    div.style.fontSize="50px";
+    div.style.marginBottom="30px";
+    div.innerText=winner;
+
+    scoreBox.prepend(div);
+
+    resultTimeout = setTimeout(()=>{
+
+        scoreBox.style.display="none";
+
+        if(queue.length>0){
+            playNext();
+        }else{
+            idle.style.display="block";
+            cover.style.display="block";
+            video.style.display="none";
+            bgm.volume=1;
+            bgm.play();
+        }
+
+    },20000);
+}
+
+    },80);
+}
+
+</script>
+<script>
+document.addEventListener("keydown", function (event) {
+
+    if (event.ctrlKey && event.key.toLowerCase() === "b") {
+        event.preventDefault();
+        window.location.href = "menu.html";
+    }
+    else if (event.ctrlKey && event.key.toLowerCase() === "x") {
+        event.preventDefault();
+        window.location.href = "classic.html";
+    }
+    else if (event.ctrlKey && event.key.toLowerCase() === "v") {
+        event.preventDefault();
+        window.location.href = "songbook.html";
+    }
+
+});
+</script>
+</body>
+</html>
