@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Videoke Main Menu</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, sans-serif;
+}
+
+/* Background Image */
+#welcomeImg{
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:contain; /* cover kung gusto mong punuin ang screen */
+    z-index:0;
+}
+
+/* Center Menu */
+.screen{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    z-index:10;
+}
+
+.menu{
+    display:none;
+    flex-direction:column;
+    gap:15px;
+    align-items:center;
+}
+
+.menu button{
+    width:400px;
+    height:30px;
+    border:none;
+    border-radius:20px;
+    cursor:pointer;
+    font-size:20px;
+    font-weight:bold;
+
+    opacity:0;
+    transition:opacity .3s ease;
+    pointer-events:none;
+
+    transition:0.3s;
+    animation: glow 1s infinite ease-in-out;
+}
+
+@keyframes glow{
+
+    0%{
+        box-shadow:
+            0 0 5px #00ff99,
+            0 0 10px #00ff99;
+    }
+
+    50%{
+        box-shadow:
+            0 0 15px #00ff99,
+            0 0 30px #00ff99,
+            0 0 45px #00ff99;
+    }
+
+    100%{
+        box-shadow:
+            0 0 5px #00ff99,
+            0 0 10px #00ff99;
+    }
+
+}
+
+.menu button:hover{
+    transform:scale(1.05);
+
+    box-shadow:
+        0 0 20px gold,
+        0 0 40px gold,
+        0 0 60px gold;
+}
+
+.classic{
+    background:#1e90ff;
+    color:white;
+}
+
+.battle{
+    background:purple;
+    color:white;
+}
+
+#lockMsg{
+    position:absolute;
+    top:20px;
+    width:100%;
+    text-align:center;
+    color:red;
+    font-size:18px;
+    z-index:20;
+}
+
+#fbLink{
+    position:absolute;
+    bottom:20px;
+    width:100%;
+    text-align:center;
+    z-index:20;
+}
+
+#fbLink a{
+    color:yellow;
+    text-decoration:underline;
+    font-size:18px;
+}
+.box{
+    width: 1000px;
+    padding: 5px;
+    background-color: #1e90ff;
+    border: 3px solid white;
+    border-radius: 10px;
+    color: white;
+    font-size: 24px;
+    text-align: center;
+    bottom:40px;
+
+    background-color: rgba(0, 0, 0, 0.5);
+}
+.background{
+    position:absolute;
+    z-index:1;
+}
+
+#licenseTimer{
+    position:fixed;   /* Palitan mula absolute */
+    top:10px;
+    left:10%;
+    transform:translateX(-50%);
+
+    z-index:5;
+
+    color:#00ff99;
+    background:rgba(0,0,0,.5);
+    padding:5px 15px;
+    border-radius:5px;
+
+    pointer-events:none;
+}
+
+button{
+    position:relative;
+    z-index:10;
+}
+.exit{
+    width:400px;
+    height:30px;
+    border:none;
+    border-radius:20px;
+    background:#d60000;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.exit:hover{
+    background:#ff0000;
+}
+</style>
+
+</head>
+<body>
+<div id="licenseTimer"></div>
+<img id="welcomeImg" src="images/welcome.png" alt="Welcome">
+
+<div id="lockMsg"></div>
+
+<div id="fbLink">
+    <a href="https://www.messenger.com/t/100061461966947/" target="_blank">
+        Click here to contact us on Facebook Messenger
+    </a>
+</div>
+
+<div class="screen menu" id="menuScreen">
+
+    <a href="classic.html">
+        <button class="classic">CLASSIC VIDEOKE (with Camera bg)</button>
+    </a>
+
+    <a href="classic1.html">
+        <button class="classic">CLASSIC VIDEOKE (small camera)</button>
+    </a>
+
+    <a href="battle.html">
+        <button class="battle">BATTLE OF THE SINGER</button>
+    </a>
+
+    <button onclick="exitApp()">EXIT</button>
+
+    <div class="box" id="reminderBox">
+
+    <h6>
+        Paalala: Kung wala po ang gusto ninyo na kanta ay pwede po kayong mag-request ng hanggang 100 songs nang libre. Chat lang po kayo sa Messenger sa baba.
+        <br><br>
+        Reminder: If the song you're looking for isn't available, you can request up to 100 songs for free. Just send us a message on Messenger using the link below.
+    </h6>
+</div>
+<script>
+// Show lock message if ?locked=1
+const params = new URLSearchParams(window.location.search);
+
+if(params.get("locked")==="1"){
+    document.getElementById("lockMsg").innerHTML=
+        "⛔ Buy a Pro Code<br><br>" +
+        "Contact: 09106465156<br>" +
+        "₱499 - 1 Year Validity<br>" +
+        "₱999 - 2 Years Validity";
+}
+
+// Show menu automatically
+window.onload=function(){
+    document.getElementById("menuScreen").style.display="flex";
+};
+
+// Keyboard shortcuts
+document.addEventListener("keydown",function(event){
+
+    switch(event.key.toLowerCase()){
+
+        case "z":
+            window.location.href="classic.html";
+            break;
+
+        case "x":
+            window.location.href="battle.html";
+            break;
+
+        case "v":
+            window.location.href="songbook.html";
+            break;
+
+        case "u":
+            window.location.href="update.html";
+            break;
+
+    }
+
+});
+const buttons = document.querySelectorAll(".menu button");
+
+let hideTimer;
+
+function showButtons(){
+
+    buttons.forEach(btn=>{
+        btn.style.opacity = "1";
+        btn.style.pointerEvents = "auto";
+    });
+
+    clearTimeout(hideTimer);
+
+    hideTimer = setTimeout(hideButtons, 10000);
+}
+
+function hideButtons(){
+
+    buttons.forEach(btn=>{
+        btn.style.opacity = "0";
+        btn.style.pointerEvents = "none";
+    });
+
+}
+
+document.addEventListener("mousemove", showButtons);
+
+document.addEventListener("keydown", showButtons);
+
+document.addEventListener("touchstart", showButtons);
+
+hideButtons();
+
+window.addEventListener("DOMContentLoaded", () => {
+    const reminder = document.getElementById("reminderBox");
+
+    // Siguraduhing nakikita ito sa pag-open ng page
+    reminder.style.display = "block";
+
+    // Mawawala pagkatapos ng 20 seconds
+    setTimeout(() => {
+        reminder.style.display = "none";
+    }, 20000);
+});
+</script>
+<script>
+
+function updateLicenseTimer(){
+
+    const box = document.getElementById("licenseTimer");
+
+    const license = JSON.parse(localStorage.getItem("license"));
+
+    if(!license){
+
+        box.innerHTML = "";
+
+        return;
+
+    }
+
+    if(license.life){
+
+        box.innerHTML = "License : Lifetime";
+
+        return;
+
+    }
+
+    let remaining = license.expire - Date.now();
+
+    if(remaining <= 0){
+
+        box.innerHTML = "License Expired";
+
+        return;
+
+    }
+
+    const days = Math.floor(remaining / (1000*60*60*24));
+
+    remaining %= (1000*60*60*24);
+
+    const hours = Math.floor(remaining / (1000*60*60));
+
+    remaining %= (1000*60*60);
+
+    const minutes = Math.floor(remaining / (1000*60));
+
+    remaining %= (1000*60);
+
+    const seconds = Math.floor(remaining / 1000);
+
+    box.innerHTML =
+        "Validity : "
+        + days + "d "
+        + hours + "h "
+        + minutes + "m "
+        + seconds + "s";
+
+}
+
+updateLicenseTimer();
+
+setInterval(updateLicenseTimer,1000);
+
+</script>
+<script>
+const { ipcRenderer } = require("electron");
+
+function exitApp() {
+    if (confirm("Are you sure you want to exit?")) {
+        ipcRenderer.send("exit-app");
+    }
+}
+</script>
+<audio id="bgMusic" autoplay>
+    <source src="sounds/bgmusic.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+window.addEventListener("DOMContentLoaded", () => {
+    const music = document.getElementById("bgMusic");
+    music.volume = 0.2;
+    music.play().catch(console.error);
+});
+</script>
+</body>
+</html>

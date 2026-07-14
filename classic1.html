@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JS PC Karaoke</title>
+
+<style>
+html,body{
+    margin:0;
+    height:100%;
+    background:black;
+    font-family:Arial;
+    overflow:hidden;
+    color:white;
+}
+
+/* BACKGROUND */
+#bgVideo{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:0;
+}
+@keyframes borderGlow {
+    0% {
+        border-color: green;
+        box-shadow: 0 0 5px red;
+    }
+    50% {
+        border-color: blue;
+        box-shadow: 0 0 20px gold, 0 0 30px orange;
+    }
+    100% {
+        border-color: green;
+        box-shadow: 0 0 5px gold;
+    }
+}
+/* COVER (FOR IDLE) */
+#coverPhoto{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    z-index:1;
+    display:block;
+}
+
+/* MAIN VIDEO */
+#video{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    display:none;
+    z-index:2;
+
+    object-fit:cover;
+
+    background:black;
+
+    /* enhance letters */
+    filter: contrast(200%) brightness(140%);
+
+    mix-blend-mode: screen;
+}
+#title{
+    position:absolute;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:28px;
+    letter-spacing:3px;
+    z-index:5;
+    transition:opacity 0.3s ease;
+}
+#cameraPreview{
+    position: fixed;
+
+    bottom: 20px;
+    left: 20px;
+
+    width: 140px;
+    height: 210px;
+
+    object-fit: cover;
+
+    border: 3px solid white;
+    border-radius: 10px;
+
+    background: black;
+
+    z-index: 9999;
+
+    transform: scaleX(-1);
+}
+
+#queue{
+    position:absolute;
+    top:40px;
+    left:14px;
+    width:100px;
+    max-height:200px;
+    overflow:auto;
+
+    background:black; /* solid black */
+    border:3px solid gold;
+    border-radius:10px;
+
+    padding:10px;
+    z-index:5;
+}
+
+.qitem{
+    padding:4px;
+    border-bottom:1px solid #333;
+}
+
+@keyframes dazzlingGlow {
+    0% {
+        box-shadow: 0 0 10px white;
+    }
+    50% {
+        box-shadow:
+            0 0 20px white,
+            0 0 40px white,
+            0 0 80px #ffffff;
+    }
+    100% {
+        box-shadow: 0 0 10px white;
+    }
+}
+
+#scoreBox{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    display:none;
+    text-align:center;
+    min-width:500px;
+    padding:40px;
+    background:rgba(0,0,0,0.95);
+    border:6px solid white;
+    border-radius:25px;
+    z-index:10;
+
+    box-shadow:
+        0 0 10px white,
+        0 0 25px white,
+        0 0 50px #ffffff,
+        0 0 80px #e6e6e6;
+
+    animation:dazzlingGlow 1.2s infinite;
+}
+
+#scoreNumber{
+    font-size:250px;
+    font-weight:900;
+    line-height:1;
+}
+
+#idle{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:42px;
+    opacity:0.9;
+    z-index:6;
+    text-align:center;
+    border:3px solid green;
+    padding:10px 20px;
+    border-radius:10px;
+    color:gold;
+text-shadow:
+0 0 5px darkred,
+0 0 10px gold,
+0 0 20px orange,
+0 0 30px darkorange;
+animation:borderGlow 1s infinite;
+}
+
+#ui{
+    position:absolute;
+    top:10px;
+    right:10px;
+    z-index:5;
+}
+input{
+    width:220px;
+    padding:10px;
+    font-size:48px;
+    text-align:center;
+    letter-spacing:3px;
+
+    border:none;          /* tanggal border */
+    outline:none;         /* tanggal focus outline */
+    background:transparent;
+
+    color:white;          /* white numbers */
+}
+#scoreMessage{
+    margin-top:20px;
+    font-size:40px;
+    font-weight:bold;
+    color:gold;
+
+    text-shadow:
+        0 0 10px gold,
+        0 0 20px orange,
+        0 0 30px orange;
+}
+#countdown{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+
+    font-size:40px;
+    font-weight:bold;
+    color:gold;
+
+    padding:10px 15px;
+    border:3px solid gold;
+    border-radius:10px;
+
+    background:rgba(0,0,0,0.6);
+    z-index:50;
+
+    text-shadow:0 0 10px orange;
+}
+#autoPlayBtn{
+    position:absolute;
+    bottom:20px;
+    right:10px;
+    z-index:100;
+
+    padding:10px 20px;
+    font-size:18px;
+    font-weight:bold;
+
+    cursor:pointer;
+}
+#clock{
+    position:absolute;
+    top:0px; /* nasa ilalim ng queue */
+    left:10px;
+
+    width:120px;
+
+    text-align:center;
+
+    font-size:16px;
+    font-weight:bold;
+
+    color:gold;
+
+    background:rgba(0,0,0,0.7);
+
+    border:2px solid gold;
+    border-radius:8px;
+
+    padding:5px;
+
+    z-index:5;
+}
+#autoPlayBtn{
+    position:absolute;
+    bottom:20px;
+    right:10px;
+    z-index:100;
+
+    padding:10px 20px;
+    font-size:18px;
+    font-weight:bold;
+
+    cursor:pointer;
+
+    transition:opacity 0.5s ease;
+}
+</style>
+</head>
+
+<body>
+
+<video id="cameraPreview" autoplay muted playsinline></video>
+
+<div id="mainPage">
+
+<video id="bgVideo" autoplay loop muted playsinline>
+    <source src="videos/bg.mp4">
+</video>
+
+<img id="coverPhoto" src="images/cover.png">
+
+<video id="video"></video>
+
+<div id="title">000000</div>
+
+<div id="queue"></div>
+<div id="clock"></div>
+
+<div id="ui">
+    <input id="search" value="000000" maxlength="6">
+</div>
+
+<button id="autoPlayBtn">RANDOM PLAY</button>
+
+<div id="scoreBox">
+    <div id="scoreNumber">0</div>
+    <div id="scoreMessage"></div>
+</div>
+
+<div id="idle">🎤 ENTER A SONG</div>
+
+<audio id="applause" src="sounds/applause.mp3"></audio>
+<audio id="result" src="sounds/result.mp3"></audio>
+
+<div id="countdown">00:00</div>
+
+</div>
+<script>
+
+/* SONGS */
+const songs = Array.from({length:99999}, (_,i)=>({
+    id: i + 1,
+    file: `videos/${i+1}.mp4`
+}));
+
+let queue = [];
+let autoPlayMode = false;
+
+let video = document.getElementById("video");
+let bgVideo = document.getElementById("bgVideo");
+let coverPhoto = document.getElementById("coverPhoto");
+
+let queueBox = document.getElementById("queue");
+let title = document.getElementById("title");
+let searchInput = document.getElementById("search");
+
+let scoreBox = document.getElementById("scoreBox");
+let scoreNumber = document.getElementById("scoreNumber");
+let scoreMessage = document.getElementById("scoreMessage");
+
+let idleBox = document.getElementById("idle");
+
+let applause = document.getElementById("applause");
+let result = document.getElementById("result");
+
+let scoreInterval = null;
+
+let autoPlayBtn = document.getElementById("autoPlayBtn");
+
+let cameraPreview = document.getElementById("cameraPreview");
+
+async function startCamera(){
+    try{
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video:true,
+            audio:false
+        });
+
+        cameraPreview.srcObject = stream;
+    }catch(err){
+        console.log("Camera denied", err);
+    }
+}
+
+/* FULLSCREEN */
+function goFullscreen(){
+    let el = document.documentElement;
+    if(el.requestFullscreen){
+        el.requestFullscreen().catch(()=>{});
+    }
+}
+
+/* KEY INPUT */
+document.addEventListener("keydown", function(e){
+
+    let val = searchInput.value.replace(/\D/g,"");
+
+    if(e.key >= "0" && e.key <= "9"){
+        val = (val + e.key).slice(-6);
+        searchInput.value = val.padStart(6,"0");
+
+    }
+
+    if(e.key === "Backspace"){
+        val = val.slice(0,-1);
+        searchInput.value = val.padStart(6,"0");
+    }
+
+    if(e.key === "Enter"){
+        playCode();
+    }
+     // NEXT SONG KEY
+    if(e.key.toLowerCase() === "s"){
+        skipSong();
+    }
+
+});
+
+/* NUMBER SOUND EFFECTS (KEPT) */
+document.addEventListener("keydown", function(e){
+    if (e.key >= "0" && e.key <= "9") {
+        let audio = new Audio("sounds/" + e.key + ".mp3");
+        audio.play();
+    }
+});
+
+/* PLAY CODE */
+function playCode(){
+
+    let code = searchInput.value.replace(/\D/g,"");
+    if(code === "") return;
+
+    let num = parseInt(code);
+    if(num < 1 || num > 99999) return;
+
+    addToQueue(songs[num-1]);
+    searchInput.value = "000000";
+
+
+}
+
+/* QUEUE */
+function addToQueue(song){
+
+    queue.push(song);
+    updateQueue();
+
+    if(video.style.display === "none" || video.paused){
+        playNext();
+    }
+}
+
+function updateQueue(){
+
+let nextSong = "NONE";
+
+if(queue.length > 0){
+    nextSong = String(queue[0].id).padStart(6,"0");
+}
+
+queueBox.innerHTML = `
+<div style="text-align:center">
+
+<div style="font-size:18px;font-weight:bold;">
+QUEUE
+</div>
+
+<div style="
+font-size:60px;
+font-weight:bold;
+margin:10px 0;
+">
+${queue.length}
+</div>
+
+<div style="
+font-size:16px;
+margin-top:10px;
+">
+NEXT
+</div>
+
+<div style="
+font-size:22px;
+font-weight:bold;
+margin-top:5px;
+">
+${nextSong}
+</div>
+
+</div>
+`;
+
+}
+
+/* PLAY NEXT */
+function playNext(){
+
+    let song;
+
+    if(queue.length > 0){
+
+        song = queue.shift();
+        updateQueue();
+
+    }else{
+
+        if(autoPlayMode){
+
+            getRandomValidSong().then(song => {
+
+    if(song){
+        playSong(song);
+        startCountdown();
+        countdown.style.display = "block";
+    }else{
+        idleBox.style.display = "block";
+        coverPhoto.style.display = "block";
+        video.style.display = "none";
+        bgVideo.style.display = "block";
+    }
+
+});
+return;
+        }
+    }
+
+    playSong(song);
+    startCountdown();
+    countdown.style.display = "block";
+}
+async function getRandomValidSong(){
+
+    for(let i = 0; i < 10000; i++){
+
+        let randomId = Math.floor(Math.random() * 99999) + 1;
+        let file = `videos/${randomId}.mp4`;
+
+        let exists = await new Promise(resolve => {
+
+            let v = document.createElement("video");
+
+            v.onloadedmetadata = () => resolve(true);
+            v.onerror = () => resolve(false);
+
+            v.src = file;
+        });
+
+        if(exists){
+            return {
+                id: randomId,
+                file: file
+            };
+        }
+    }
+
+    return null;
+}
+function getVideoIdFromFile(file){
+    let name = file.split("/").pop(); 
+    let match = name.match(/^(\d{6})/);
+    return match ? match[1] : "000000";
+}
+
+/* PLAY SONG */
+function playSong(code) {
+    localStorage.setItem("selectedSong", code);
+    window.location.href = "classic.html";
+}
+function playSong(song){
+
+    idleBox.style.display = "none";
+    coverPhoto.style.display = "none";
+
+    bgVideo.style.display = "none";
+    video.style.display = "block";
+
+    title.innerText = String(song.id).padStart(6,"0");
+title.style.display = "block";
+title.style.opacity = "1";
+
+    video.src = song.file;
+
+    video.ontimeupdate = function(){
+
+    if(video.currentTime >= video.duration - 5){
+        video.pause();
+        showScore();
+        countdown.style.display = "none";
+    }
+
+};
+video.onerror = function(){
+
+    console.log("Video not found:", song.file);
+
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+
+    title.style.display = "none";
+    countdown.style.display = "none";
+
+    if(queue.length > 0 || autoPlayMode){
+        playNext();
+    }else{
+        idleBox.style.display = "block";
+        coverPhoto.style.display = "block";
+        video.style.display = "none";
+        bgVideo.style.display = "block";
+    }
+};
+
+video.onloadedmetadata = function(){
+
+    video.currentTime = 7; // start sa 10 seconds
+
+    setTimeout(() => {
+        video.play();
+    }, 5000); // 5-second delay
+
+};
+
+    goFullscreen();
+
+    scoreBox.style.display = "none";
+    cameraPreview.style.display = "block";
+
+if(!cameraPreview.srcObject){
+    startCamera();
+}
+}
+
+function skipSong(){
+
+    if(video.style.display === "none") return;
+
+
+    video.pause();
+    video.currentTime = 0;
+
+    clearInterval(scoreInterval);
+
+    applause.pause();
+    applause.currentTime = 0;
+
+    scoreBox.style.display = "none";
+
+    title.style.display = "block";
+title.style.opacity = "1";
+
+    playNext();
+}
+/* SCORE */
+video.onended = showScore;
+
+function showScore(){
+
+    scoreBox.style.display = "block";
+
+    applause.loop = true;
+    applause.play();
+
+    let score = Math.floor(Math.random()*125)+75;
+    let current = 0;
+
+    clearInterval(scoreInterval);
+
+    scoreInterval = setInterval(()=>{
+
+        current++;
+        scoreNumber.innerText = current;
+
+        if(current >= score){
+
+            if(score >= 80 && score <= 89){
+    scoreMessage.innerText = "YOU'RE A GOOD SINGER";
+}
+else if(score >= 90 && score <= 120){
+    scoreMessage.innerText = "EXCELLENT!";
+}
+else if(score >= 121 && score <= 200){
+    scoreMessage.innerText = "YOU'RE THE BEST SINGER!";
+}
+else{
+    scoreMessage.innerText = "GOOD JOB!";
+    countdown.style.display = "none";
+}
+
+            clearInterval(scoreInterval);
+
+            applause.pause();
+            applause.currentTime = 0;
+
+            result.currentTime = 0;
+            result.play();
+
+            result.onended = function(){
+
+                scoreBox.style.display = "none";
+
+               if(queue.length > 0 || autoPlayMode){
+    playNext();
+}else{
+    idleBox.style.display = "block";
+    coverPhoto.style.display = "block";
+    video.style.display = "none";
+    bgVideo.style.display = "block";
+    title.style.display = "none";
+}
+            };
+        }
+
+    },25);
+}
+
+/* INIT */
+idleBox.style.display = "block";
+coverPhoto.style.display = "block";
+video.style.display = "none";
+bgVideo.style.display = "block";
+title.style.display = "none";
+let countdown = document.getElementById("countdown");
+countdown.style.display = "none";
+
+let timerInterval = null;
+
+function startCountdown(){
+
+    clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+
+        if(video.duration && !isNaN(video.duration)){
+
+            let remaining = Math.floor(video.duration - video.currentTime);
+
+            if(remaining < 0) remaining = 0;
+
+            let min = Math.floor(remaining / 60);
+            let sec = remaining % 60;
+
+            countdown.innerText =
+                String(min).padStart(2,"0") + ":" +
+                String(sec).padStart(2,"0");
+        }
+
+    }, 500);
+}
+autoPlayBtn.onclick = function(){
+
+    autoPlayMode = !autoPlayMode;
+
+    autoPlayBtn.innerText =
+        autoPlayMode ? "PLAY ON" : "PLAY OFF";
+
+    if(autoPlayMode &&
+       video.style.display === "none" &&
+       queue.length === 0){
+
+        playNext();
+    }
+};
+
+const clock = document.getElementById("clock");
+
+function updateClock(){
+
+    const now = new Date();
+
+    let hours = now.getHours();
+    let minutes = now.getMinutes();
+    let seconds = now.getSeconds();
+
+    let ampm = hours >= 12 ? "PM" : "AM";
+
+    hours = hours % 12;
+    if(hours === 0) hours = 12;
+
+    clock.innerText =
+        String(hours).padStart(2,"0") + ":" +
+        String(minutes).padStart(2,"0") + ":" +
+        String(seconds).padStart(2,"0") +
+        " " + ampm;
+}
+
+updateClock();
+setInterval(updateClock,1000);
+
+
+let hideTimer;
+
+function showAutoPlayButton(){
+
+    autoPlayBtn.style.opacity = "1";
+    autoPlayBtn.style.pointerEvents = "auto";
+
+    clearTimeout(hideTimer);
+
+    hideTimer = setTimeout(() => {
+
+        autoPlayBtn.style.opacity = "0";
+        autoPlayBtn.style.pointerEvents = "none";
+
+    }, 5000); // 5 seconds
+}
+
+document.addEventListener("mousemove", showAutoPlayButton);
+
+// show agad pag open
+showAutoPlayButton();
+// ===============================
+// AUTO PLAY FROM SONGBOOK
+// ===============================
+window.addEventListener("load", () => {
+
+    const code = localStorage.getItem("selectedSong");
+
+    if (!code) return;
+
+    // Ilagay ang song number sa existing search input
+    searchInput.value = code.padStart(6, "0");
+
+    // Gamitin ang existing function ng app
+    playCode();
+
+    // Linisin ang storage pagkatapos magamit
+    localStorage.removeItem("selectedSong");
+
+});
+
+</script>
+<script>
+document.addEventListener("keydown", function (event) {
+
+    if (event.ctrlKey && event.key.toLowerCase() === "b") {
+        event.preventDefault();
+        window.location.href = "menu.html";
+    }
+    else if (event.ctrlKey && event.key.toLowerCase() === "x") {
+        event.preventDefault();
+        window.location.href = "battle.html";
+    }
+    else if (event.ctrlKey && event.key.toLowerCase() === "v") {
+        event.preventDefault();
+        window.location.href = "songbook.html";
+    }
+
+});
+</script>
+</body>
+</html>
