@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Echo Mix JS Tv Videoke Songbook</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#000;
+    color:#fff;
+    font-family:Arial,sans-serif;
+    padding:15px;
+    min-height:100vh;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+    color:#00ffff;
+    font-size:26px;
+    text-shadow:
+        0 0 10px #00ffff,
+        0 0 20px #00ffff,
+        0 0 40px #00ffff;
+}
+
+.search-box{
+    position:sticky;
+    top:0;
+    background:#000;
+    padding-bottom:15px;
+    z-index:100;
+}
+
+#search{
+    width:100%;
+    padding:16px 20px;
+    font-size:18px;
+    border-radius:40px;
+    border:2px solid #00ffff;
+    background:#111;
+    color:white;
+    outline:none;
+
+    box-shadow:
+        0 0 10px #00ffff,
+        0 0 20px #00ffff;
+
+    transition:.3s;
+}
+
+#totalSongs{
+    text-align:center;
+    color:gold;
+    font-size:18px;
+    margin-bottom:15px;
+    font-weight:bold;
+    text-shadow:
+        0 0 5px gold,
+        0 0 10px gold;
+}
+
+#search:focus{
+    box-shadow:
+        0 0 15px #00ffff,
+        0 0 30px #00ffff,
+        0 0 60px #00ffff;
+}
+
+#count{
+    text-align:center;
+    color:#00ffff;
+    margin:20px 0;
+    font-size:16px;
+}
+
+/* Desktop */
+
+.header{
+    display:grid;
+    grid-template-columns:90px 1fr 2fr;
+    gap:10px;
+    padding:12px;
+    background:#00ffff;
+    color:black;
+    font-weight:bold;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+
+.row{
+    display:grid;
+    grid-template-columns:90px 1fr 2fr;
+    gap:10px;
+    padding:12px;
+    border-bottom:1px solid #222;
+}
+
+.row:nth-child(even){
+    background:#111;
+}
+
+/* Mobile */
+
+@media(max-width:600px){
+
+    .header{
+        display:none;
+    }
+
+    .row{
+        display:block;
+        background:#111;
+        margin-bottom:10px;
+        border-radius:12px;
+        border:1px solid #222;
+        box-shadow:0 0 10px rgba(0,255,255,.25);
+    }
+
+    .code{
+        color:gold;
+        font-weight:bold;
+        margin-bottom:6px;
+        font-size:15px;
+    }
+
+    .singer{
+        color:#00ff88;
+        margin-bottom:6px;
+    }
+
+    .title{
+        font-size:18px;
+        font-weight:bold;
+    }
+}
+.row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.code{
+    width:90px;
+}
+
+.singer{
+    width:220px;
+}
+
+.title{
+    flex:1;
+}
+
+.play{
+    width:60px;
+    text-align:center;
+}
+.play-btn{
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:18px;
+}
+.header,
+.row{
+    display:grid;
+    grid-template-columns:90px 220px 1fr 70px;
+    align-items:center;
+}
+html, body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow-x:hidden; /* tanggal horizontal scrollbar */
+    overflow-y:auto;
+    box-sizing:border-box;
+}
+
+*{
+    box-sizing:border-box;
+}
+.container{
+    width:100%;
+    max-width:100%;
+}
+</style>
+</head>
+<body>
+
+<h1>🎤 ECHO MIX VIDEOKE SONGBOOK</h1>
+
+<div id="totalSongs"></div>
+
+<div class="search-box">
+    <input
+        type="text"
+        id="search"
+        placeholder="🔍 Search code, singer or title. For song request contact:  +639106465156"
+        autocomplete="off"
+    >
+</div>
+
+<div id="count">
+    🔍 Search a song title, singer, or code
+</div>
+
+<div class="header">
+    <div>CODE</div>
+    <div>TITLE</div>
+    <div>SINGER</div>
+    <div>PLAY</div>
+</div>
+
+
+
+<div id="songList"></div>
+
+<script>
+
+const songs = [
+
+{code:"3", singer:".", title:"Happy Birthday To You"},
+{code:"6", singer:"Regine Velasquez", title:"Dadalhin"},
+{code:"17", singer:"Lala Amor", title:"Raining In Manila"},
+{code:"135", singer:"Jaya", title:"Wala Na Bang Pag-ibig"},
+{code:"137", singer:"Asin", title:"Itanong mo sa mga bata"},
+{code:"141", singer:"Jessa Saragoza", title:"Di Bat Ikaw"},
+{code:"168", singer:"George Benson", title:"Nothing Gonna Change My Love For You"},
+{code:"178", singer:"Rachel Alejandro", title:"Mr. Cupido"},
+{code:"189", singer:"Roberta Flack", title:"Killing Me Softly With This Song"},
+{code:"198", singer:"Connie Francisco", title:"Pretty Little Baby"},
+{code:"202", singer:"Clair Marlo", title:"Till They Take My Heart Away"},
+{code:"240", singer:"Jessa Saragoza", title:"Bakit Pa"},
+{code:"241", singer:"Celine Dion", title:"My Heart Will Go On"},
+{code:"253", singer:"Debby Gibson", title:"No More Rhyme"},
+{code:"275", singer:"Whitney Uston ", title:"One Moment In Time"},
+{code:"278", singer:"Climax", title:"I Miss You"},
+{code:"302", singer:"Regine Velasquez", title:"Pangako"},
+{code:"308", singer:"Kenny Rogers", title:"Island In The Stream"},
+{code:"313", singer:"Renz Verano", title:"Remenber Me"},
+{code:"327", singer:"Tootsie Guivara", title:"Pasulyap-sulyap"},
+{code:"339", singer:"Leann Rimes", title:"How Do I Live"},
+{code:"344", singer:"Valentina Mcbride", title:"My Valentine"},
+{code:"382", singer:"Jhon Denver", title:"Take Me Home Down The Road"},
+{code:"403", singer:"Dione Warwick", title:"I'll Never Love This Way Again"},
+{code:"470", singer:"eXPOSE", title:"i'LL nEVER gET oVER yOU gETTING oVER mE"},
+{code:"475", singer:"Rey Valera", title:"Kahit maputi na ang buhok ko"},
+{code:"480", singer:"The Cranberries", title:"Zombie"},
+{code:"537", singer:"Joey Albert", title:"I Remember The Boy"},
+{code:"540", singer:"Joey Albert", title:"Tell Me"},
+{code:"559", singer:"Diana Ros", title:"If We Hold On Together"},
+{code:"560", singer:"", title:"If This Is Love"},
+{code:"617", singer:"Sampaguita", title:"Nosi Balasi"},
+{code:"625", singer:"Regine Velasquez", title:"You Are My Song"},
+{code:"636", singer:"Roxette", title:"It Must Been Love "},
+{code:"638", singer:"The Corrs", title:"Breathless"},
+{code:"650", singer:"Men Oppose", title:"Pag-ibig Ko Sa'yo'y Di Magbabago"},
+{code:"680", singer:"Whitney Houston", title:"I Have Nothing"},
+{code:"685", singer:"Kylie Minogue & Jason Donavan", title:"Especially For You"},
+{code:"721", singer:"Chaka Khan", title:"Through The Fire"},
+{code:"728", singer:"Patti Austin", title:"All Behind Us Now"},
+{code:"746", singer:"", title:"Till My Heart Aches End"},
+{code:"985", singer:"Tyler Collins", title:"Thanks To You"},
+{code:"988", singer:"Kenny Rogers & Sheena Easton", title:"We've Got Tonight"},
+{code:"993", singer:"Alison Krauss", title:"Baby Now That I Found You"},
+{code:"1001", singer:"Cup Of Joe", title:"Multo"},
+{code:"1044", singer:"Cinderella", title:"Ang Boyfriend Kong baduy"},
+{code:"1045", singer:"Roselle Nava", title:"Bakit nga Ba mahal kita"},
+{code:"1050", singer:"Ella Mae Saison", title:"If The Feeling Is Gone"},
+{code:"1104", singer:"Jaya", title:"Dahil Tanging Ikaw"},
+{code:"1109", singer:"Jaya", title:"Laging Naroon ka "},
+{code:"1118", singer:"Janet Basco", title:"You Made Me Love Again"},
+{code:"1134", singer:"Eraserheads", title:"With A Smile"},
+{code:"1181", singer:"Asin", title:"Ang Buhay Ko"},
+{code:"1278", singer:"Leah Navaro", title:"Ang Pag-ibig Kong Ito"},
+{code:"1301", singer:"Lloyd Umali", title:"Bakit Kung Sino Pa"},
+{code:"1324", singer:"Carpenters", title:"We've Only just begun"},
+{code:"1356", singer:"Maria Carey", title:"Hero"},
+{code:"1357", singer:"Sharon Cuneta", title:"High School Life"},
+{code:"1382", singer:"Sharon Cuneta", title:"Mr. Dj"},
+{code:"1390", singer:"Eraserheads", title:"Pare Ko"},
+{code:"1437", singer:"ABBA", title:"Chiquitita"},
+{code:"1451", singer:"", title:"Close To You"},
+{code:"1465", singer:"Chiqui Pineda", title:"How Did You Know"},
+{code:"1487", singer:"Odette Quesada", title:"Friend Of Mine"},
+{code:"1560", singer:"Jam Morales", title:"Even If"},
+{code:"1570", singer:"Jam Morales", title:"A Smile In Your Heart"},
+{code:"1579", singer:"Bonnie Tyler", title:"If I Sing You A Love Song"},
+{code:"1633", singer:"Diana Ross", title:"Do You Know Where You Going To"},
+{code:"1652", singer:"", title:"Dont We Almost Have It All"},
+{code:"1660", singer:"Gloria Estefan & The Miami Sound Machine", title:"Words Get In The Way"},
+{code:"1686", singer:"", title:"The Way It Use To Be"},
+{code:"1688", singer:"Tiffany", title:"All this time"},
+{code:"1697", singer:"Bette Midler", title:"From A distance"},
+{code:"1707", singer:"Debbie Gibson", title:"Lost In Our Eyes"},
+{code:"1712", singer:"", title:"throu The Years"},
+{code:"1714", singer:"Carpenters", title:"Rainy Days And Mondays"},
+{code:"2543", singer:"Celine Dion, Peabo Bryson", title:"Beauty And The Beast"},
+{code:"2572", singer:"Tom Jones", title:"Green Green Grass Of Home"},
+{code:"2581", singer:"Eagles", title:"Hatel California"},
+{code:"1606", singer:"Beyoce", title:"Halo"},
+{code:"2618", singer:"Anne Murray", title:"You Needed Me"},
+{code:"2640", singer:"", title:"Tears In Heaven"},
+{code:"2644", singer:"Debby Boone", title:"You Light Up My Life"},
+{code:"2645", singer:"Dionne Warwick", title:"THAT'S What Friends Are For"},
+{code:"2647", singer:"Eric Clapton", title:"Wonderful Tonight"},
+{code:"2649", singer:"The Carpenters", title:"Yesterday Once More"},
+{code:"2673", singer:"Carpenter", title:"Superstar"},
+{code:"2678", singer:"AngelBert Humperdinck", title:"Love Me With All Of Your Heart"},
+{code:"2686", singer:"", title:""},
+{code:"2741", singer:"", title:""},
+{code:"2742", singer:"", title:""},
+{code:"2825", singer:"", title:""},
+{code:"2845", singer:"", title:""},
+{code:"2964", singer:"", title:""},
+{code:"3926", singer:"", title:""},
+{code:"3033", singer:"", title:""},
+{code:"3043", singer:"", title:""},
+{code:"3053", singer:"", title:""},
+{code:"3057", singer:"", title:""},
+{code:"3139", singer:"", title:""},
+{code:"3146", singer:"", title:""},
+{code:"3169", singer:"", title:""},
+{code:"3175", singer:"", title:""},
+{code:"3200", singer:"", title:""},
+{code:"3240", singer:"", title:""},
+{code:"3281", singer:"", title:""},
+{code:"3333", singer:"", title:""},
+{code:"3410", singer:"", title:""},
+{code:"3869", singer:"", title:""},
+{code:"3988", singer:"", title:""},
+{code:"4078", singer:"", title:""},
+{code:"4173", singer:"", title:""},
+{code:"4186", singer:"", title:""},
+{code:"4226", singer:"", title:""},
+{code:"4281", singer:"", title:""},
+{code:"4290", singer:"", title:""},
+{code:"4297", singer:"", title:""},
+{code:"4314", singer:"", title:""},
+{code:"4324", singer:"", title:""},
+{code:"4328", singer:"", title:""},
+{code:"4330", singer:"", title:""},
+{code:"4334", singer:"", title:""},
+{code:"4375", singer:"", title:""},
+{code:"4446", singer:"", title:""},
+{code:"4560", singer:"", title:""},
+{code:"4619", singer:"", title:""},
+{code:"4920", singer:"", title:""},
+{code:"4931", singer:"", title:""},
+{code:"4955", singer:"", title:""},
+{code:"4964", singer:"", title:""},
+{code:"4965", singer:"", title:""},
+{code:"5020", singer:"", title:""},
+{code:"5046", singer:"", title:""},
+{code:"5071", singer:"", title:""},
+{code:"5098", singer:"", title:""},
+{code:"5106", singer:"", title:""},
+{code:"5123", singer:"", title:""},
+{code:"5150", singer:"", title:""},
+{code:"5155", singer:"", title:""},
+{code:"5158", singer:"", title:""},
+{code:"5162", singer:"", title:""},
+{code:"5200", singer:"", title:""},
+{code:"5215", singer:"", title:""},
+{code:"5241", singer:"", title:""},
+{code:"5250", singer:"", title:""},
+{code:"5266", singer:"", title:""},
+{code:"5272", singer:"", title:""},
+{code:"5337", singer:"", title:""},
+{code:"5354", singer:"", title:""},
+{code:"5386", singer:"", title:""},
+{code:"5513", singer:"", title:""},
+{code:"5526", singer:"", title:""},
+{code:"5531", singer:"", title:""},
+{code:"5538", singer:"", title:""},
+{code:"5566", singer:"", title:""},
+{code:"5593", singer:"", title:""},
+{code:"5611", singer:"", title:""},
+{code:"5635", singer:"", title:""},
+{code:"5702", singer:"", title:""},
+{code:"5767", singer:"", title:""},
+{code:"5822", singer:"", title:""},
+{code:"5825", singer:"", title:""},
+{code:"5834", singer:"", title:""},
+{code:"5843", singer:"", title:""},
+{code:"5859", singer:"", title:""},
+{code:"5872", singer:"", title:""},
+{code:"5874", singer:"", title:""},
+{code:"5896", singer:"", title:""},
+{code:"5914", singer:"", title:""},
+{code:"5916", singer:"", title:""},
+{code:"5918", singer:"", title:""},
+{code:"6110", singer:"", title:""},
+{code:"6396", singer:"", title:""},
+{code:"6489", singer:"", title:""},
+{code:"6500", singer:"", title:""},
+{code:"6530", singer:"", title:""},
+{code:"6541", singer:"", title:""},
+{code:"6550", singer:"", title:""},
+{code:"6530", singer:"", title:""},
+{code:"6541", singer:"", title:""},
+{code:"6550", singer:"", title:""},
+{code:"6570", singer:"", title:""},
+{code:"6604", singer:"", title:""},
+{code:"6634", singer:"", title:""},
+{code:"6651", singer:"", title:""},
+{code:"6691", singer:"", title:""},
+{code:"6699", singer:"", title:""},
+{code:"6701", singer:"", title:""},
+{code:"6743", singer:"", title:""},
+{code:"6759", singer:"", title:""},
+{code:"6864", singer:"", title:""},
+{code:"6873", singer:"", title:""},
+{code:"6907", singer:"", title:""},
+{code:"6701", singer:"", title:""},
+{code:"6743", singer:"", title:""},
+{code:"6759", singer:"", title:""},
+{code:"6864", singer:"", title:""},
+{code:"6873", singer:"", title:""},
+{code:"6907", singer:"", title:""},
+{code:"6965", singer:"", title:""},
+{code:"7010", singer:"", title:""},
+{code:"7030", singer:"", title:""},
+{code:"7046", singer:"", title:""},
+{code:"7078", singer:"", title:""},
+{code:"7119", singer:"", title:""},
+{code:"7156", singer:"", title:""},
+{code:"7169", singer:"", title:""},
+{code:"7194", singer:"", title:""},
+{code:"7216", singer:"", title:""},
+{code:"7237", singer:"", title:""},
+{code:"7268", singer:"", title:""},
+{code:"7269", singer:"", title:""},
+{code:"7280", singer:"", title:""},
+{code:"7294", singer:"", title:""},
+{code:"7308", singer:"", title:""},
+{code:"7327", singer:"", title:""},
+{code:"7377", singer:"", title:""},
+{code:"7453", singer:"", title:""},
+{code:"7495", singer:"", title:""},
+{code:"7527", singer:"", title:""},
+{code:"7530", singer:"", title:""},
+{code:"7680", singer:" ", title:" "},
+{code:"7707", singer:" ", title:" "},
+{code:"7801", singer:" ", title:" "},
+{code:"7864", singer:" ", title:" "},
+{code:"8003", singer:" ", title:" "},
+{code:"8009", singer:" ", title:" "},
+{code:"8029", singer:" ", title:" "},
+{code:"8033", singer:" ", title:" "},
+{code:"8085", singer:" ", title:" "},
+{code:"8098", singer:" ", title:" "},
+{code:"8132", singer:"Regine Velasquez", title:"Shine"},
+{code:"8137", singer:" ", title:" "},
+{code:"8139", singer:" ", title:" "},
+{code:"8145", singer:" ", title:" "},
+{code:"8151", singer:" ", title:" "},
+{code:"8209", singer:" ", title:" "},
+{code:"8238", singer:" ", title:" "},
+{code:"8246", singer:" ", title:" "},
+{code:"8250", singer:" ", title:" "},
+{code:"8267", singer:" ", title:" "},
+{code:"8324", singer:" ", title:" "},
+{code:"8334", singer:" ", title:" "},
+{code:"8340", singer:" ", title:" "},
+{code:"8384", singer:" ", title:" "},
+{code:"8390", singer:" ", title:" "},
+{code:"8410", singer:" ", title:" "},
+{code:"8412", singer:" ", title:" "},
+{code:"8450", singer:" ", title:" "},
+{code:"8481", singer:" ", title:" "},
+{code:"8485", singer:" ", title:" "},
+{code:"8502", singer:" ", title:" "},
+{code:"8504", singer:" ", title:" "},
+{code:"8505", singer:"Parokya Ni Edgar", title:"Gitara"},
+{code:"8508", singer:" ", title:" "},
+{code:"8526", singer:" ", title:" "},
+{code:"8528", singer:" ", title:" "},
+{code:"8529", singer:"Carpenter", title:"I Have You"},
+{code:"8595", singer:" ", title:" "},
+{code:"8601", singer:" ", title:" "},
+{code:"8626", singer:" ", title:" "},
+{code:"8528", singer:" ", title:" "},
+{code:"8529", singer:" ", title:" "},
+{code:"8595", singer:" ", title:" "},
+{code:"8601", singer:" ", title:" "},
+{code:"8626", singer:" ", title:" "},
+{code:"8654", singer:" ", title:" "},
+{code:"9001", singer:"Dj Mogo", title:"Hawak Mo Ang Beat"},
+{code:"9002", singer:" ", title:" "},
+{code:"9019", singer:" ", title:" "},
+{code:"9209", singer:" ", title:" "},
+{code:"9219", singer:" ", title:" "},
+{code:"9220", singer:" ", title:" "},
+{code:"9269", singer:" ", title:" "},
+{code:"9338", singer:" ", title:" "},
+{code:"9438", singer:" ", title:" "},
+{code:"9615", singer:" ", title:" "},
+{code:"9723", singer:" ", title:" "},
+{code:"9779", singer:" ", title:" "},
+{code:"9792", singer:" ", title:" "},
+{code:"9808", singer:" ", title:" "},
+{code:"9987", singer:" ", title:" "},
+{code:"9997", singer:" ", title:" "},
+{code:"10039", singer:" ", title:" "},
+{code:"10065", singer:" ", title:" "},
+{code:"10186", singer:"Taylor Swift", title:"Crazier"},
+{code:"10219", singer:" ", title:" "},
+{code:"10263", singer:" ", title:" "},
+{code:"10301", singer:" ", title:" "},
+{code:"10469", singer:" ", title:" "},
+{code:"10553", singer:" ", title:" "},
+{code:"10644", singer:" ", title:" "},
+{code:"11082", singer:" ", title:" "},
+{code:"11126", singer:" ", title:" "},
+{code:"11275", singer:"GLOC9, Rochell Pangilinan", title:"Baile"},
+{code:"11322", singer:" ", title:" "},
+{code:"11387", singer:" ", title:" "},
+{code:"11590", singer:" ", title:" "},
+{code:"11655", singer:" ", title:" "},
+{code:"11774", singer:" ", title:" "},
+{code:"11781", singer:" ", title:" "},
+{code:"11894", singer:" ", title:" "},
+{code:"11925", singer:" ", title:" "},
+{code:"12045", singer:" ", title:" "},
+{code:"12150", singer:" ", title:" "},
+{code:"12153", singer:"Rhiana", title:"California King Bed"},
+{code:"12156", singer:" ", title:" "},
+{code:"12159", singer:" ", title:" "},
+{code:"12197", singer:" ", title:" "},
+{code:"12261", singer:" ", title:" "},
+{code:"12288", singer:" ", title:" "},
+{code:"12334", singer:" ", title:" "},
+{code:"12455", singer:" ", title:" "},
+{code:"12462", singer:" ", title:" "},
+{code:"12483", singer:" ", title:" "},
+{code:"12504", singer:" ", title:" "},
+{code:"12518", singer:" ", title:" "},
+{code:"12666", singer:"Yeng Constantino", title:"Chinito "},
+{code:"12710", singer:" ", title:" "},
+{code:"12857", singer:" ", title:" "},
+{code:"12916", singer:" ", title:" "},
+{code:"12965", singer:" ", title:" "},
+{code:"13063", singer:" ", title:" "},
+{code:"13094", singer:" ", title:" "},
+{code:"13124", singer:" ", title:" "},
+{code:"13346", singer:" ", title:" "},
+{code:"13364", singer:" ", title:" "},
+{code:"13728", singer:" ", title:" "},
+{code:"13880", singer:" ", title:" "},
+{code:"14178", singer:" ", title:" "},
+{code:"14505", singer:"Ichiworm", title:"Di Na Muli"},
+{code:"14609", singer:" ", title:" "},
+{code:"14797", singer:" ", title:" "},
+{code:"14869", singer:" ", title:" "},
+{code:"15098", singer:" ", title:" "},
+{code:"15255", singer:" ", title:" "},
+{code:"15376", singer:" ", title:" "},
+{code:"15583", singer:" ", title:" "},
+{code:"15708", singer:" ", title:" "},
+{code:"16102", singer:" ", title:" "},
+{code:"16127", singer:" ", title:" "},
+{code:"16172", singer:" ", title:" "},
+{code:"16299", singer:" ", title:" "},
+{code:"16487", singer:" ", title:" "},
+{code:"16588", singer:" ", title:" "},
+{code:"16607", singer:" ", title:" "},
+{code:"16693", singer:" ", title:" "},
+{code:"16695", singer:" ", title:" "},
+{code:"16829", singer:" ", title:" "},
+{code:"16862", singer:" ", title:" "},
+{code:"16869", singer:" ", title:" "},
+{code:"17002", singer:"This Band", title:"Kahit Ayaw Mo Na"},
+{code:"17173", singer:" ", title:" "},
+{code:"17453", singer:" ", title:" "},
+{code:"17479", singer:" ", title:" "},
+{code:"17517", singer:" ", title:" "},
+{code:"17609", singer:" ", title:" "},
+{code:"17968", singer:" ", title:" "},
+{code:"18213", singer:" ", title:" "},
+{code:"18294", singer:" ", title:" "},
+{code:"18526", singer:" ", title:"Maulawak Sa Mildred"},
+{code:"18637", singer:" ", title:" "},
+{code:"18662", singer:" ", title:" "},
+{code:"18983", singer:" ", title:" "},
+{code:"19013", singer:" ", title:" "},
+{code:"19037", singer:" ", title:" "},
+{code:"19349", singer:" ", title:" "},
+{code:"19703", singer:" ", title:" "},
+{code:"19746", singer:" ", title:" "},
+{code:"19975", singer:" ", title:" "},
+{code:"20031", singer:"Moriset Amon", title:"Gusto Ko Nang Bumitaw"},
+{code:"20339", singer:" ", title:" "},
+{code:"20468", singer:" ", title:" "},
+{code:"20565", singer:" ", title:" "},
+{code:"20686", singer:" ", title:" "},
+{code:"20757", singer:" ", title:" "},
+{code:"20831", singer:" ", title:" "},
+{code:"20841", singer:" ", title:" "},
+{code:"20850", singer:" ", title:" "},
+{code:"20867", singer:" ", title:" "},
+{code:"20978", singer:" ", title:" "},
+{code:"80000", singer:" ", title:" "},
+{code:"80001", singer:" ", title:" "},
+{code:"80002", singer:" ", title:" "},
+{code:"80003", singer:" ", title:" "},
+{code:"80004", singer:" ", title:" "},
+{code:"80006", singer:" ", title:" "},
+{code:"80010", singer:" ", title:" "},
+{code:"90900", singer:" ", title:" "},
+{code:"99999", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"", singer:" ", title:" "},
+{code:"5233", singer:"Engelbert Humperdinck", title:"A MAN WITHOUT LOVE"},
+{code:"5234", singer:"Sarah Geronimo", title:"A VERY SPECIAL LOVE"},
+{code:"5235", singer:"6 Cyclemind", title:"AAMININ"},
+{code:"5236", singer:"Willie Revillame", title:"YUN KA"},
+{code:"5237", singer:"Helen-Reddy", title:"I-CAN-T-SAY-GOODBYE-TO-YOU"},
+{code:"5238", singer:"Teri-DeSario", title:"FALLIN"},
+{code:"5239", singer:"Sheryn-Regis", title:"COME-IN-OUT-OF-THE-RAIN"},
+{code:"5240", singer:"Hall & Oates", title:"YOU'VE LOST THAT LOVIN' FEELIN"},
+{code:"5241", singer:"David Pomerans", title:"Got To Believe In Magic"},
+{code:"5242", singer:"Whitney Houston", title:"YOU'RE STILL MY MAN"},
+{code:"5243", singer:"Modern Talking", title:"YOU'RE MY HEART YOU'RE MY SOUL"},
+{code:"5244", singer:"Anne Murray", title:"YOU'RE A PART OF ME"},
+{code:"5245", singer:"Siakol", title:"AKALA KO'Y LANGIT"},
+{code:"5246", singer:"The Bloomfields", title:"ALE"},
+{code:"5247", singer:"Patti Austin", title:"ALL BEHIND US NOW"},
+{code:"5248", singer:"Everly Brothers", title:"ALL I HAVE TO DO IS DREAM"},
+{code:"5249", singer:"Lady Gaga", title:"ALWAYS REMEMBER US THIS WAY"},
+{code:"5250", singer:"Jessa Saragoza", title:"Ikakasal Ka Na"},
+{code:"5252", singer:"Beatles", title:"AND I LOVE HER"},
+{code:"5251", singer:"Fra Lippo Lippi", title:"ANGEL"},
+{code:"5253", singer:"Guy Sebastian", title:"ANGELS BROUGHT ME HERE"},
+{code:"5254", singer:"Phil Collins", title:"ANOTHER DAY IN PARADISE"},
+{code:"5255", singer:"Irene Cara", title:"ANYONE CAN SEE"},
+{code:"5256", singer:"Rose & Bruno Mars", title:"APT"},
+{code:"5257", singer:"Backstreet Boys", title:"AS LONG AS YOU LOVE ME"},
+{code:"5258", singer:"Angeline Quinto", title:"AT ANG HIRAP"},
+{code:"5259", singer:"Player", title:"BABY COME BACK"},
+{code:"5260", singer:"Cueshe", title:"BACK TO ME"},
+{code:"5261", singer:"Rachelle Ann Go", title:"BAKIT"},
+{code:"5262", singer:"Dina Bonnevie", title:"BAKIT BA GANYAN"},
+{code:"5263", singer:"Jose Mari Chan", title:"BEAUTIFUL GIRL"},
+{code:"5264", singer:"Celine Dion & Peabo Bryson", title:"BEAUTY AND THE BEAST"},
+{code:"5265", singer:"Bon Jovi", title:"BED OF ROSES"},
+{code:"5266", singer:"Chino Romero", title:"Maling Akala"},
+{code:"5267", singer:"Zack Tabudlo", title:"BINIBINI"},
+{code:"5268", singer:"Richard Carpenter", title:"CALLING YOUR NAME AGAIN"},
+{code:"5269", singer:"Jose Mari Chan", title:"CAN WE JUST STOP AND TALK AWHILE"},
+{code:"5270", singer:"Freddie Aguilar", title:"MAGBAGO KA"},
+{code:"5271", singer:"Renz Verano", title:"MAHAL KITA"},
+{code:"5272", singer:"Selina Sevilla", title:"Nilunok Kong Lahat"},
+{code:"5273", singer:"Eraserheads", title:"MASELANG BAHAGHARI"},
+{code:"5274", singer:"Father & Sons", title:"MAMIMISS KITA"},
+{code:"5275", singer:"The Moffatts", title:"MISS YOU LIKE CRAZY"},
+{code:"5276", singer:"Paolo Santos", title:"MOONLIGHT OVER PARIS"},
+{code:"5277", singer:"Cup Of Joe", title:"Multo"},
+{code:"5278", singer:"The Temptations", title:"MY GIRL"},
+{code:"5279", singer:"Frank Sinatra", title:"MY WAY"},
+{code:"5280", singer:"Judy Boucher", title:"CAN'T BE WITH YOU TONIGHT"},
+{code:"5281", singer:"Morten Harket", title:"CAN'T TAKE MY EYES OFF YOU"},
+{code:"5282", singer:"Modern Talking", title:"CHERI CHERI LADY"},
+{code:"5283", singer:"Whigfield", title:"CLOSE TO YOU"},
+{code:"5284", singer:"Sheryn Regis", title:"COME IN OUT OF THE RAIN"},
+{code:"5285", singer:"Kenny Rogers", title:"CRAZY"},
+{code:"5286", singer:"Mandy Moore", title:"CRY"},
+{code:"5287", singer:"Fifty Fifty  Twin Version", title:"CUPID"},
+{code:"5288", singer:"Luther Vandross", title:"DANCE WITH MY FATHER"},
+{code:"5289", singer:"ABBA", title:"DANCING QUEEN"},
+{code:"5290", singer:"John Lennon", title:"JEALOUS GUY"},
+{code:"5291", singer:"Sponge Cola", title:"JEEPNEY"},
+{code:"5292", singer:"Siakol", title:"Lakas Tama"},
+{code:"5293", singer:"Fra Lippo Lippi", title:"LATER"},
+{code:"5294", singer:"John Denver", title:"LEAVING ON A JET PLANE"},
+{code:"5295", singer:"Idina Menzel", title:"LET IT GO"},
+{code:"5296", singer:"Rivermaya", title:"LIWANAG SA DILIM"},
+{code:"5297", singer:"England Dan & John Ford Coley", title:"LOVE IS THE ANSWER"},
+{code:"5298", singer:"Michael Cretu", title:"LOVE ME"},
+{code:"5299", singer:"Lobo", title:"LOVE ME FOR WHAT I AM"},
+{code:"5300", singer:"Queen ", title:"LOVE OF MY LIFE"},
+{code:"5301", singer:"South Border", title:"LOVE OF MY LIFE"},
+{code:"5302", singer:"The Eagles", title:"LOVE WILL KEEP US ALIVE"},
+{code:"5303", singer:"", title:"LOWBAT NA BA "},
+{code:"5304", singer:"Taylor Swift", title:"LOVE STORY"},
+{code:"5305", singer:"TJ Monterde", title:"PALAGI"},
+{code:"5306", singer:"Jamie Rivera", title:"PANGARAP KA NA LANG BA"},
+{code:"5307", singer:"BINI", title:"PANTROPIKO"},
+{code:"5308", singer:"Rockstar", title:"PARTING TIME"},
+{code:"5309", singer:"Cook da Books", title:"YOUR EYES"},
+{code:"5310", singer:"Phil Collins", title:"YOU'LL BE IN MY HEART"},
+{code:"5311", singer:"BINI", title:"SALAMIN, SALAMIN"},
+{code:"5312", singer:"Dong Abay", title:"PERPEKTO"},
+{code:"5313", singer:"SunKissed Lola", title:"PASILYO"},
+{code:"5314", singer:"Moira Dela Torre", title:"KUMPAS"},
+{code:"5315", singer:"M2M", title:"PRETTY BOY"},
+{code:"5316", singer:"Basil Valdez", title:"NGAYON AT KAILANMAN"},
+{code:"5317", singer:"Air Supply", title:"I'LL NEVER GET ENOUGH OF YOU"},
+{code:"5318", singer:"Eric Clapton", title:"TEARS IN HEAVEN"},
+{code:"5319", singer:"Sixpence None The Richer", title:"KISS ME"},
+{code:"5320", singer:"Orient Pearl", title:"KASALANAN"},
+{code:"5321", singer:"Donna Cruz", title:"KAPAG TUMIBOK ANG PUSO"},
+{code:"5322", singer:"Erik Santos", title:"I'LL NEVER GO"},
+{code:"5323", singer:"Angeline Quinto", title:"Kunin Mo Na Ang Lahat Sa Akin"},
+{code:"5324", singer:"Silent Sanctuary", title:"KUNDIMAN"},
+{code:"5325", singer:"Willie Revillame", title:"KUNG PARA SA 'YO"},
+{code:"5326", singer:"Michael Pangilinan", title:"KUNG SAKALI"},
+{code:"5327", singer:"Renz Verano", title:"KEEP ON LOVING YOU"},
+{code:"5328", singer:"Erik Santos", title:"KULANG AKO KUNG WALA KA"},
+{code:"5329", singer:"Celine Dion", title:"THAT'S THE WAY IT IS"},
+{code:"5330", singer:"Katharine McPhee ft. Zachary Levi", title:"TERRIFIED"},
+{code:"5331", singer:"Bamboo", title:"TATSULOK"},
+{code:"5332", singer:"Rupert Holmes", title:"TERMINAL"},
+{code:"5333", singer:"Cheap Trick", title:"THE FLAME"},
+{code:"5334", singer:"Kalapana", title:"THE HURT"},
+{code:"5335", singer:"Ken Laszlo", title:"TONIGHT"},
+{code:"5336", singer:"Angela Boill", title:"TONIGHT I GIVE IN"},
+{code:"5337", singer:"Carpenters", title:"Love Me For What I Am"},
+{code:"5338", singer:"Earl Agustin", title:"TIBOK"},
+{code:"5339", singer:"Lani Misalucha", title:"TUNAY NA MAHAL"},
+{code:"5340", singer:"KZ Tandingan", title:"TWO LESS LONELY PEOPLE IN THE WORLD"},
+{code:"5341", singer:"Chris De Burgh", title:"THE LADY IN RED"},
+{code:"5342", singer:"Boyfriends", title:"SUMAYAW SUMUNOD"},
+{code:"5343", singer:"The Beatles", title:"THE LONG AND WINDING ROAD"},
+{code:"5344", singer:"Mary McGregor", title:"THIS GIRL JUST TURNED INTO A WOMAN"},
+{code:"5345", singer:"Chicago", title:"SONG FOR YOU"},
+{code:"5346", singer:"Eraserheads", title:"SPOLARIUM"},
+{code:"5347", singer:"Maroon 5", title:"SHE WILL BE LOVED"},
+{code:"5348", singer:"Gloc-9 feat. Ebe Dancel", title:"SIRENA"},
+{code:"5349", singer:"Martin Nievera", title:"SAY THAT YOU LOVE ME"},
+{code:"5350", singer:"The Real Thing", title:"YOU TO ME ARE EVERYTHING"},
+{code:"5351", singer:"Taylor Swift", title:"YOU BELONG WITH ME"},
+{code:"5352", singer:"Dan Hill", title:"WHY DO WE ALWAYS HURT THE ONES WE LOVE"},
+{code:"5353", singer:"Introvoys", title:"WILL I SURVIVE"},
+{code:"5354", singer:"Melissa Manchaser", title:"Dont Cry Out Loud"},
+{code:"5355", singer:"Debby Boone", title:"YOU LIGHT UP MY LIFE"},
+{code:"5356", singer:"Mariah Carey", title:"WITHOUT YOU"},
+{code:"5357", singer:"Calloway", title:"YOU ARE MY EVERYTHING"},
+{code:"5358", singer:"Skylark", title:"WILDFLOWER"},
+{code:"5359", singer:"Firehouse", title:"WHEN I LOOK INTO YOUR EYES"},
+{code:"5360", singer:"Def Leppard", title:"WHEN LOVE AND HATE COLLIDE"},
+{code:"5361", singer:"Jim Photoglo", title:"WILL OF THE WIND"},
+{code:"5362", singer:"Ketama", title:"YOU ARE THE REASON"},
+{code:"5363", singer:"England Dan & John Ford Coley", title:"WHERE DO I GO FROM HERE"},
+{code:"5364", singer:"Martin Nievera", title:"YOU ARE MY SONG"},
+{code:"5365", singer:"Juris", title:"DI LANG IKAW"},
+{code:"5366", singer:"Moira Dela Torre", title:"DITO KA LANG"},
+{code:"5367", singer:"Maki", title:"DILAW"},
+{code:"5368", singer:"Lady Gaga & Bruno Mars", title:"DIE WITH A SMILE"},
+{code:"5369", singer:"Paul Anka", title:"DIANA"},
+{code:"5370", singer:"Leif Garrett", title:"I WAS LOOKING FOR SOMEONE TO LOVE"},
+{code:"5371", singer:"Toto", title:"I WON'T HOLD YOU BACK"},
+{code:"5372", singer:"Luther Vandross", title:"ID RATHER"},
+{code:"5373", singer:"Moira Dela Torre & Jason Marvin", title:"IKAW AT AKO"},
+{code:"5374", singer:"Tom Rodriguez", title:"IKAW ANG SAGOT"},
+{code:"5375", singer:"Melissa Manchester", title:"IF THIS IS LOVE"},
+{code:"5376", singer:"Nobita", title:"IKAW LANG"},
+{code:"5377", singer:"Jos Garcia", title:"IKAW ANG IIBIGIN KO"},
+{code:"5378", singer:"Klimaxx", title:"I'D STILL SAY YES"},
+{code:"5379", singer:"Alicia Keys", title:"IF I AINT GOT YOU"},
+{code:"5380", singer:"Rivermaya", title:"IF"},
+{code:"5381", singer:"Kenny Rogers & Anne Murray", title:"IF I EVER FALL IN LOVE AGAIN"},
+{code:"5382", singer:"Gabriel", title:"YOU NEVER TOLD ME YOU LOVE ME"},
+{code:"5383", singer:"Irene Cara", title:"WHAT A FEELING (Flashdance)"},
+{code:"5384", singer:"George Benson & Roberta Flack", title:"YOU ARE THE LOVE OF MY LIFE"},
+{code:"5385", singer:"America", title:"YOU CAN DO MAGIC"},
+{code:"5386", singer:"Diana Ross", title:"WHEN You Tel Me That You Love Me"},
+{code:"5387", singer:"Bruno Mars", title:"WHEN I WAS YOUR MAN"},
+{code:"5388", singer:"Foreigner", title:"WAITING FOR A GIRL LIKE YOU"},
+{code:"5389", singer:"Kitchie Nadal", title:"WAG NA WAG MONG SASABIHIN"},
+{code:"5390", singer:"Kenny Rogers & Sheena Easton", title:"WE'VE GOT TONIGHT"},
+{code:"5391", singer:"Neil Diamond", title:"SWEET CAROLINE"},
+{code:"5392", singer:"Up Dharma Down", title:"TADHANA"},
+{code:"5393", singer:"Bruno Mars", title:"TALKING TO THE MOON"},
+{code:"5394", singer:"Air Supply", title:"SWEET DREAMS"},
+{code:"5395", singer:"Sergio Mendes", title:"NEVER GONNA LET YOU GO"},
+{code:"5396", singer:"George Benson", title:"NOTHING'S GONNA CHANGE MY LOVE FOR YOU"},
+{code:"5397", singer:"Paul McCartney", title:"NO MORE LONELY NIGHTS"},
+{code:"5398", singer:"Francis Magalona", title:"KALEIDOSCOPE WORLD"},
+{code:"5399", singer:"Ben&Ben", title:"SA SUSUNOD NA HABANG BUHAY"},
+{code:"5400", singer:"Richard Sanderson", title:"REALITY"},
+{code:"5401", singer:"John Farnham", title:"PLEASE DONT ASK ME"},
+{code:"5402", singer:"BINI", title:"SALAMIN, SALAMIN"},
+{code:"5403", singer:"Jericho Rosales", title:"PUSONG LIGAW"},
+{code:"5404", singer:"December Avenue", title:"SA NGALAN NG PAG IBIG"},
+{code:"5405", singer:"Jim Brickman feat. Jordan Hill & Billy Porter", title:"DESTINY"},
+{code:"5406", singer:"Fra Lippo Lippi", title:"EVERYTIME I SEE YOU"},
+{code:"5407", singer:"Alias", title:"I NEED YOU NOW"},
+{code:"5408", singer:"Seals & Crofts", title:"FIRST LOVE"},
+{code:"5409", singer:"George Baker", title:"I'VE BEEN AWAY TOO LONG"},
+{code:"5410", singer:"B.J. Thomas", title:"RAINDROPS KEEP FALLING ON MY HEAD"},
+{code:"5411", singer:"Imago", title:"EWAN"},
+{code:"5412", singer:"Mariah Carey", title:"HERO"},
+{code:"5413", singer:"Billy Ocean", title:"SUDDENLY"},
+{code:"5414", singer:"Rivermaya", title:"HINAHANAP HANAP KITA"},
+{code:"5415", singer:"Whitney Houston", title:"I WANNA DANCE WITH SOMEBODY"},
+{code:"5416", singer:"The Beatles", title:"DONT LET ME DOWN"},
+{code:"5417", singer:"Alicia Keys", title:"GIRL ON FIRE"},
+{code:"5418", singer:"Michael Johnson", title:"DOORS"},
+{code:"5419", singer:"Air Supply", title:"I CAN WAIT FOREVER"},
+{code:"5420", singer:"Dilaw", title:"UHAW"},
+{code:"5421", singer:"Johnny Gill", title:"HALF CRAZY"},
+{code:"5422", singer:"Steve Perry", title:"FOOLISH HEART"},
+{code:"5423", singer:"Nazareth", title:"DREAM ON"},
+{code:"5424", singer:"Morisette Amon", title:"GUSTO KO NANG BUMITAW"},
+{code:"5425", singer:"The Beatles", title:"OB LA DI, OB LA DA "},
+{code:"5426", singer:"Joy", title:"TOUCH BY TOUCH"},
+{code:"5427", singer:"Paul Anka", title:"TIMES OF YOUR LIFE"},
+{code:"5428", singer:"Skusta Clee", title:"KALIMUTAN KA"},
+{code:"5429", singer:"Crowded House", title:"DON'T DREAM IT'S OVER"},
+{code:"5430", singer:"Beyonce", title:"HALO"},
+{code:"5431", singer:"Whitney Houston", title:"TRY IT ON MY OWN"},
+{code:"5432", singer:"Shamrock", title:"HAPLOS"},
+{code:"5433", singer:"Sugarfree", title:"TULOG NA"},
+{code:"5434", singer:"Paul McCartney and Stevie Wonder", title:"EBONY AND IVORY"},
+{code:"5435", singer:"Def Leppard", title:"TWO STEPS BEHIND"},
+{code:"5436", singer:"Gloc-9 feat. Jeazell Grutas", title:"UPUAN"},
+{code:"5437", singer:"Ric Segreto", title:"GIVE ME A CHANCE"},
+{code:"5438", singer:"Zack Tabudlo", title:"HABANG BUHAY"},
+{code:"5439", singer:"Fiction Factory", title:"FEELS LIKE HEAVEN"},
+{code:"5440", singer:"I Belong to the Zoo", title:"SANA"},
+{code:"5441", singer:"Peter Cetera", title:"GLORY OF LOVE"},
+{code:"5442", singer:"The Allan Parsons Project", title:"EYE IN THE SKY"},
+{code:"5443", singer:"Teri DeSario", title:"FALLIN'"},
+{code:"5444", singer:"Ariel Rivera", title:"GETTING TO KNOW EACH OTHER"},
+{code:"5445", singer:"Gerard Joling", title:"WE DON'T HAVE TO SAY THE WORDS"},
+{code:"5446", singer:"Rockstar 2", title:"WALA PA RING IBA"},
+{code:"5447", singer:"Quee", title:"TOO MUCH LOVE WILL KILL YOU"},
+{code:"5448", singer:"Philip Oakley & Giorgio Moroder", title:"TOGETHER IN ELECTRIC DREAMS"},
+{code:"5449", singer:"Spandau Ballet", title:"TRUE"},
+{code:"5450", singer:"Creedence Clearwater Revival", title:"HAVE YOU EVER SEEN THE RAIN"},
+{code:"5451", singer:"Jay-R Siaboc", title:"HILING"},
+{code:"5452", singer:"(This Angel Has Flown) - Orange & Lemons", title:"HEAVEN KNOWS"},
+{code:"5453", singer:"Harem Scarem", title:"HONESTLY"},
+{code:"5454", singer:"Asin", title:"HIMIG NG PAG IBIG"},
+{code:"5455", singer:"Scorpions", title:"HOLIDAY"},
+{code:"5456", singer:"Gary Valenciano", title:"HOW DID YOU KNOW"},
+{code:"5457", singer:"Starship", title:"SARA"},
+{code:"5458", singer:"Boyfriends", title:"SALAWAHAN"},
+{code:"5459", singer:"Eagles", title:"I CAN'T TELL YOU WHY"},
+{code:"5460", singer:"Edwin McCain", title:"I COULD NOT ASK FOR MORE"},
+{code:"5461", singer:"The Beatles", title:"IF I FELL"},
+{code:"5462", singer:"David Pack", title:"I JUST CAN'T LET GO"},
+{code:"5463", singer:"Leslie Pearl", title:"IF THE LOVE FITS, WEAR IT"},
+{code:"5464", singer:"Backstreet Boys", title:"I WANT IT THAT WAY"},
+{code:"5465", singer:"Barry Manilow", title:"IF I SHOULD LOVE AGAIN"},
+{code:"5466", singer:"Bonnie Tyler", title:"IF I SING YOU A LOVE SONG"},
+{code:"5467", singer:"Brownman Revival", title:"IKAW LANG ANG AKING MAHAL"},
+{code:"5468", singer:"Willie Revillame", title:"IKAW NA NGA"},
+{code:"5469", singer:"Engelbert Humperdinck", title:"Il MONDO"},
+{code:"5470", singer:"The Beatles", title:"I'LL FOLLOW THE SUN"},
+{code:"5471", singer:"Erik Santos", title:"I'LL NEVER GO"},
+{code:"5472", singer:"Seals & Crofts", title:"I'LL PLAY FOR YOU"},
+{code:"5473", singer:"Jann Arden", title:"INSENSITIVE"},
+{code:"5474", singer:"Mayonnaise", title:"IPAGPATAWAD MO"},
+{code:"5475", singer:"Ric Segreto", title:"KAHIT KONTING PAGTINGIN"},
+{code:"5476", singer:"Paloma Faith", title:"ONLY LOVE CAN HURT LIKE THIS"},
+{code:"5477", singer:"Andy Gibb", title:"OUR LOVE (Don't Throw It All Away)"},
+{code:"5478", singer:"Michael Bolton", title:"SAID I LOVED YOU BUT I LIED"},
+{code:"5479", singer:"Rod Stewart", title:"SAILING"},
+{code:"5480", singer:"Chris Norman", title:"SOME HEARTS ARE DIAMONDS"},
+{code:"5481", singer:"James Taylor", title:"WANDERING"},
+{code:"5482", singer:"Maureen McGovern", title:"WE COULD HAVE IT ALL"},
+{code:"5483", singer:"George Duke & Stanley Clarke", title:"SWEET BABY"},
+{code:"5484", singer:"Michael Bublé", title:"SWAY"},
+{code:"5485", singer:"Fra Lippo Lippi", title:"SOME PEOPLE"},
+{code:"5486", singer:"Beatles", title:"SOMETHING"},
+{code:"5487", singer:"Stephen Bishop", title:"SOMETHING NEW IN MY LIFE"},
+{code:"5488", singer:"Olivia Newton John feat. Cliff Richard", title:"SUDDENLY"},
+{code:"5489", singer:"", title:""},
+{code:"5490", singer:"", title:""},
+{code:"5491", singer:"", title:""},
+{code:"5492", singer:"", title:""},
+{code:"5493", singer:"", title:""},
+{code:"5494", singer:"", title:""},
+{code:"5495", singer:"", title:""},
+{code:"5496", singer:"", title:""},
+{code:"5497", singer:"", title:""},
+{code:"5498", singer:"", title:""},
+{code:"5499", singer:"", title:""},
+{code:"5500", singer:"", title:""},
+{code:"5501", singer:"", title:""},
+{code:"5502", singer:"", title:""},
+{code:"5503", singer:"", title:""},
+{code:"5504", singer:"", title:""},
+{code:"5505", singer:"", title:""},
+{code:"5506", singer:"", title:""},
+{code:"5507", singer:"", title:""},
+{code:"5508", singer:"", title:""},
+{code:"5509", singer:"", title:""},
+{code:"5510", singer:"", title:""},
+{code:"5511", singer:"", title:""},
+{code:"5512", singer:"", title:""},
+{code:"5513", singer:"", title:""},
+{code:"5514", singer:"", title:""},
+{code:"5515", singer:"", title:""},
+{code:"5516", singer:"", title:""},
+{code:"5517", singer:"", title:""},
+{code:"5518", singer:"", title:""},
+{code:"5519", singer:"", title:""},
+{code:"5520", singer:"", title:""},
+{code:"5521", singer:"", title:""},
+{code:"5522", singer:"", title:""},
+{code:"5523", singer:"", title:""},
+{code:"5524", singer:"", title:""},
+{code:"5525", singer:"", title:""},
+{code:"5526", singer:"", title:""},
+{code:"5527", singer:"", title:""},
+{code:"5528", singer:"", title:""},
+{code:"5529", singer:"", title:""},
+{code:"5530", singer:"", title:""},
+{code:"5531", singer:"", title:""},
+{code:"5532", singer:"", title:""},
+{code:"5533", singer:"", title:""},
+{code:"5534", singer:"", title:""},
+{code:"5535", singer:"", title:""},
+{code:"5536", singer:"", title:""},
+{code:"5537", singer:"", title:""},
+{code:"5538", singer:"", title:""},
+{code:"5539", singer:"", title:""},
+{code:"5540", singer:"", title:""},
+{code:"5541", singer:"", title:""},
+{code:"5542", singer:"", title:""},
+{code:"5543", singer:"", title:""},
+{code:"5544", singer:"", title:""},
+{code:"5545", singer:"", title:""},
+{code:"5546", singer:"", title:""},
+{code:"5547", singer:"", title:""},
+{code:"5548", singer:"", title:""},
+{code:"5549", singer:"", title:""},
+{code:"5550", singer:"", title:""},
+{code:"5551", singer:"", title:""},
+{code:"5552", singer:"", title:""},
+{code:"5553", singer:"", title:""},
+{code:"5554", singer:"", title:""},
+{code:"5555", singer:"", title:""},
+{code:"5556", singer:"", title:""},
+{code:"5557", singer:"", title:""},
+{code:"5558", singer:"", title:""},
+{code:"5559", singer:"", title:""},
+{code:"5560", singer:"", title:""},
+{code:"5561", singer:"", title:""},
+{code:"5562", singer:"", title:""},
+{code:"5563", singer:"", title:""},
+{code:"5564", singer:"", title:""},
+{code:"5565", singer:"", title:""},
+{code:"5566", singer:"", title:""},
+{code:"5567", singer:"", title:""},
+{code:"5568", singer:"", title:""},
+{code:"5569", singer:"", title:""},
+{code:"5570", singer:"", title:""},
+{code:"5571", singer:"", title:""},
+{code:"5572", singer:"", title:""},
+{code:"5573", singer:"", title:""},
+{code:"5574", singer:"", title:""},
+{code:"5575", singer:"", title:""},
+{code:"5576", singer:"", title:""},
+{code:"5577", singer:"", title:""},
+{code:"5578", singer:"", title:""},
+{code:"5579", singer:"", title:""},
+{code:"5580", singer:"", title:""},
+{code:"5581", singer:"", title:""},
+{code:"5582", singer:"", title:""},
+{code:"5583", singer:"", title:""},
+{code:"5584", singer:"", title:""},
+{code:"5585", singer:"", title:""},
+{code:"5586", singer:"", title:""},
+{code:"5587", singer:"", title:""},
+{code:"5588", singer:"", title:""},
+{code:"5589", singer:"", title:""},
+{code:"5590", singer:"", title:""},
+{code:"5591", singer:"", title:""},
+{code:"5592", singer:"", title:""},
+{code:"5593", singer:"", title:""},
+{code:"5594", singer:"", title:""},
+{code:"5595", singer:"", title:""},
+{code:"5596", singer:"", title:""},
+{code:"5597", singer:"", title:""},
+{code:"5598", singer:"", title:""},
+{code:"5599", singer:"", title:""},
+{code:"5600", singer:"", title:""},
+
+];
+
+const songList = document.getElementById("songList");
+const search = document.getElementById("search");
+const count = document.getElementById("count");
+const totalSongs = document.getElementById("totalSongs");
+
+totalSongs.innerHTML = `🎵 Total Songs: ${songs.length}`;
+
+window.onload = function () {
+    const search = document.getElementById("search");
+    search.focus();
+};
+
+function renderSongs(list){
+
+    songList.innerHTML = "";
+
+    if(list.length === 0){
+        count.innerHTML = "❌ No songs found";
+        return;
+    }
+
+    count.innerHTML = `🎵 ${list.length} song(s) found`;
+
+    list.forEach(song => {
+
+        songList.innerHTML += `
+            <div class="row">
+                <div class="code">${song.code}</div>
+                <div class="singer">${song.title}</div>
+                <div class="title">${song.singer}</div>
+
+                <div class="play">
+                    <button class="play-btn" onclick="playSong('${song.code}')">
+                        ▶
+                    </button>
+                </div>
+            </div>
+        `;
+
+    });
+
+}
+function playSong(code){
+
+    localStorage.setItem("selectedSong", code);
+
+    window.location.href = "classic.html";
+
+}
+function playSong(code){
+
+    localStorage.setItem("selectedSong", code);
+
+    window.location.href = "classic.html";
+
+}
+
+search.addEventListener("input", () => {
+
+    const value = search.value.trim().toLowerCase();
+
+    if(value === ""){
+        songList.innerHTML = "";
+        count.innerHTML = "🔍 Search a song title, singer, or code";
+        return;
+    }
+
+    const filtered = songs.filter(song =>
+        song.code.toLowerCase().includes(value) ||
+        song.singer.toLowerCase().includes(value) ||
+        song.title.toLowerCase().includes(value)
+    );
+
+    renderSongs(filtered);
+
+});
+
+</script>
+<script>
+document.addEventListener("keydown", function (event) {
+
+    if (event.ctrlKey && event.key.toLowerCase() === "b") {
+        event.preventDefault();
+        window.location.href = "menu.html";
+    }
+    else if (event.ctrlKey && event.key.toLowerCase() === "c") {
+        event.preventDefault();
+        window.location.href = "classic.html";
+    }
+    else if (event.ctrlKey && event.key.toLowerCase() === "v") {
+        event.preventDefault();
+        window.location.href = "songbook.html";
+    }
+
+});
+</script>
+</body>
+</html>
